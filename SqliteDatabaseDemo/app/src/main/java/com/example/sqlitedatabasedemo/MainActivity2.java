@@ -2,11 +2,14 @@ package com.example.sqlitedatabasedemo;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ContextThemeWrapper;
 
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -14,6 +17,7 @@ public class MainActivity2 extends AppCompatActivity {
 
     ListView listView;
     DatabaseHelper myDb;
+    myAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,12 +40,13 @@ public class MainActivity2 extends AppCompatActivity {
 
             String name=result.getString(result.getColumnIndex("St_Name"));
             String course=result.getString(result.getColumnIndex("St_Course"));
-            student.add(new Student(id,name,course,fees));
+            byte[] img=result.getBlob(result.getColumnIndex("St_Image"));
+            student.add(new Student(id,name,course,fees,img));
 //            names.add(result.getString(result.getColumnIndex("St_Name")));
         }
 //        ArrayAdapter array=new ArrayAdapter(this,android.R.layout.simple_list_item_1,names);
         //listView.setAdapter(array);
-        myAdapter adapter=new myAdapter(this,student);
+        adapter=new myAdapter(this,student);
         listView.setAdapter(adapter);
     }
     public void showMessage(String title,String Message)
@@ -51,5 +56,45 @@ public class MainActivity2 extends AppCompatActivity {
         builder.setCancelable(true);
         builder.setMessage(Message);
         builder.show();
+    }
+    public void deleteCall(final String id,final int position){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity2.this);
+        alertDialog.setMessage("Are You sure to delete the record");
+        alertDialog.setTitle("Alert!");
+        alertDialog.setCancelable(false);
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                boolean result=myDb.delete(Integer.parseInt(id));
+                if(result)
+                {
+                    adapter.remove(adapter.getItem(position));
+                    Toast.makeText(MainActivity2.this,"Data Deleted",Toast.LENGTH_LONG).show();
+                }else
+                {
+                    Toast.makeText(MainActivity2.this,"Data Not deleted",Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+        AlertDialog dialog = alertDialog.create();
+        dialog.show();
+
+    }
+    public void editCall(String id,int position){
+        boolean result=myDb.delete(Integer.parseInt(id));
+        if(result)
+        {
+            adapter.remove(adapter.getItem(position));
+            Toast.makeText(MainActivity2.this,"Data Deleted",Toast.LENGTH_LONG).show();
+        }else
+        {
+            Toast.makeText(MainActivity2.this,"Data Not deleted",Toast.LENGTH_LONG).show();
+        }
     }
 }

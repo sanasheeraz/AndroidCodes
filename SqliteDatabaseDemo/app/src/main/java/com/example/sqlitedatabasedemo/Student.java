@@ -12,7 +12,7 @@ public class Student {
         this.name = name;
         this.course = course;
         this.fees = fees;
-        this.stImages = stImages;
+       this.stImages = stImages;
     }
 
     public int getId() {

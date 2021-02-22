@@ -1,21 +1,40 @@
 package com.example.sqlitedatabasedemo;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 public class MainActivity extends AppCompatActivity {
 
     EditText txtName,txtCourse,txtFees,txtId;
-    Button btnAdd,btnUpdate,btnDelete,btnView;
+    Button btnAdd,btnUpdate,btnDelete,btnView,uploadImg;
     DatabaseHelper myDb;
+    byte[] imgData;
+    Uri ImageUri;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+       if(requestCode==200)
+       {
+           if(resultCode==RESULT_OK)
+           {
+               ImageUri=data.getData();
+           }
+       }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,17 +49,36 @@ public class MainActivity extends AppCompatActivity {
         btnView=findViewById(R.id.btnView);
         btnDelete=findViewById(R.id.btnDelete);
         btnUpdate=findViewById(R.id.btnUpdate);
+        uploadImg=findViewById(R.id.uploadImg);
+
+        uploadImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent=new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"),200);
+            }
+        });
+
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean result=myDb.insertData(txtName.getText().toString(),txtCourse.getText().toString(),Integer.parseInt(txtFees.getText().toString()));
+                try {
+                    InputStream input=getContentResolver().openInputStream(ImageUri);
+
+                imgData=Utils.getBytes(input);
+                boolean result=myDb.insertData(txtName.getText().toString(),txtCourse.getText().toString(),Integer.parseInt(txtFees.getText().toString()),imgData);
                 if(result)
                 {
                     Toast.makeText(MainActivity.this,"Data Inserted",Toast.LENGTH_LONG).show();
                 }else
                 {
                     Toast.makeText(MainActivity.this,"Data Not Inserted",Toast.LENGTH_LONG).show();
+                }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -49,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent(MainActivity.this,MainActivity2.class);
+
                 startActivity(intent);
 //                Cursor result=myDb.getAllData();
 //                if(result.getCount()==0)

@@ -16,6 +16,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String Column2="St_Name";
     public static final String Column3="St_Course";
     public static final String Column4="St_Fees";
+    public static final String Column5="St_Image";
     public DatabaseHelper(@Nullable Context context) {
         super(context, Database_Name, null, 1);
         SQLiteDatabase db=this.getWritableDatabase();
@@ -23,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table "+ Table_Name+"("+Column1+" INTEGER PRIMARY KEY AUTOINCREMENT,"+Column2+" Text,"+Column3+" Text,"+Column4+" INTEGER)");
+        db.execSQL("create table "+ Table_Name+"("+Column1+" INTEGER PRIMARY KEY AUTOINCREMENT,"+Column2+" Text,"+Column3+" Text,"+Column4+" INTEGER,"+Column5+" BLOB )");
     }
 
     @Override
@@ -32,13 +33,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertData(String name,String course,int fees,byte[] imageBytes)
+    public boolean insertData(String name,String course,int fees,byte[] image)
     {
         SQLiteDatabase db=this.getWritableDatabase();
         ContentValues contentValues=new ContentValues();
         contentValues.put(Column2,name);
         contentValues.put(Column3,course);
         contentValues.put(Column4,fees);
+        contentValues.put(Column5,image);
         long result=db.insert(Table_Name,null,contentValues); //-ve value on error
         if(result==-1)
         {
@@ -54,7 +56,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor result=db.rawQuery("select * from "+Table_Name,null);
         return result;
     }
-    public boolean updateData(int id,String name, String course , int fees,byte[] imageBytes){
+    public boolean updateData(int id,String name, String course , int fees){
         SQLiteDatabase db=this.getWritableDatabase();
         ContentValues contentValues=new ContentValues();
         contentValues.put(Column1,id);
